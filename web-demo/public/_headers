@@ -1,0 +1,13 @@
+# Netlify headers (also applied by `npm run preview:demo`, so the E2E tests run under this CSP).
+# Models download from Hugging Face; WebAssembly needs 'wasm-unsafe-eval'; nothing else is external.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co; img-src 'self' data:; style-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/corpus/*
+  Cache-Control: public, max-age=0, must-revalidate

@@ -1,4 +1,3 @@
-import { extname } from "node:path";
 import { parse, type HTMLElement, type Node as HtmlNode, NodeType } from "node-html-parser";
 import { extractText, getDocumentProxy } from "unpdf";
 import type { DocumentFormat, Section } from "../types.js";
@@ -20,8 +19,15 @@ const EXTENSIONS: Record<string, DocumentFormat> = {
   ".txt": "text",
 };
 
+/** The file extension with its dot, e.g. ".md"; "" when there is none. Works in Node and browsers. */
+function extension(fileName: string): string {
+  const base = fileName.slice(fileName.search(/[^/\\]*$/));
+  const dot = base.lastIndexOf(".");
+  return dot > 0 ? base.slice(dot) : "";
+}
+
 export function detectFormat(fileName: string): DocumentFormat {
-  const format = EXTENSIONS[extname(fileName).toLowerCase()];
+  const format = EXTENSIONS[extension(fileName).toLowerCase()];
   if (!format) throw new UnsupportedFormatError(fileName);
   return format;
 }

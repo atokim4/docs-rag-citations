@@ -3,12 +3,28 @@ import { vector } from "@electric-sql/pglite-pgvector";
 import type { Chunk, DocumentFormat, SearchHit, SearchMode, StoredDocument } from "./types.js";
 
 export interface StoreOptions {
-  /** Directory for a persistent database; omit for an in-memory one. */
+  /**
+   * Where the database lives: a directory in Node, `idb://<name>` for IndexedDB in a browser,
+   * or omitted for an in-memory database.
+   */
   dataDir?: string;
+  /**
+   * Flush to IndexedDB in the background instead of after every query. Much faster in a browser;
+   * a crash can lose the last write. Ignored by the Node file system.
+   */
+  relaxedDurability?: boolean;
   /** Embedding size; must match the embedder used to build the database. */
   dimensions: number;
   /** Embedding model name, recorded so a database is never queried with a different model. */
   model: string;
+}
+
+/** A document whose chunks were already embedded, e.g. at build time. */
+export interface PreparedDocument {
+  name: string;
+  format: DocumentFormat;
+  chunks: Chunk[];
+  embeddings: number[][];
 }
 
 export interface SearchOptions {
@@ -44,10 +60,19 @@ export class Store {
   static async open(options: StoreOptions): Promise<Store> {
     const { dimensions } = options;
     if (!Number.isInteger(dimensions) || dimensions < 1) throw new RangeError("dimensions must be a positive integer");
-    const db = await PGlite.create({ ...(options.dataDir ? { dataDir: options.dataDir } : {}), extensions: { vector } });
+    const db = await PGlite.create({
+      ...(options.dataDir ? { dataDir: options.dataDir } : {}),
+      ...(options.relaxedDurability ? { relaxedDurability: true } : {}),
+      extensions: { vector },
+    });
     try {
       await migrate(db, dimensions);
       await checkModel(db, options.model, dimensions);
+      // HNSW is approximate. With the default candidate list (40) for our 20 hybrid candidates,
+      // an index built row by row (server uploads) and one built in bulk (the browser demo)
+      // can return different neighbours for the same query. 100 brings recall close to exact
+      // at this scale for well under a millisecond more per query.
+      await db.exec(`SET hnsw.ef_search = ${HNSW_EF_SEARCH}`);
     } catch (error) {
       await db.close();
       throw error;
@@ -66,19 +91,47 @@ export class Store {
     chunks: Chunk[],
     embeddings: number[][],
   ): Promise<StoredDocument> {
-    if (chunks.length !== embeddings.length) throw new Error("Each chunk needs exactly one embedding");
-    for (const embedding of embeddings) this.assertDimensions(embedding);
+    const [stored] = await this.replaceDocuments([{ name, format, chunks, embeddings }]);
+    return stored!;
+  }
 
+  /** Inserts many documents in one transaction (all or nothing), replacing same-named ones. */
+  async replaceDocuments(documents: PreparedDocument[]): Promise<StoredDocument[]> {
+    for (const { chunks, embeddings } of documents) {
+      if (chunks.length !== embeddings.length) throw new Error("Each chunk needs exactly one embedding");
+      for (const embedding of embeddings) this.assertDimensions(embedding);
+    }
+
+    const bulk = documents.reduce((n, d) => n + d.chunks.length, 0) >= BULK_REINDEX_CHUNKS;
     return this.db.transaction(async (tx) => {
-      await tx.query("DELETE FROM documents WHERE name = $1", [name]);
-      const { rows } = await tx.query<{ id: number; created_at: Date }>(
-        "INSERT INTO documents (name, format) VALUES ($1, $2) RETURNING id, created_at",
-        [name, format],
-      );
-      const doc = rows[0]!;
-      await insertChunks(tx, doc.id, chunks, embeddings);
-      return { id: doc.id, name, format, chunkCount: chunks.length, createdAt: doc.created_at };
+      if (bulk) await tx.exec("DROP INDEX IF EXISTS chunks_embedding_idx");
+      const stored: StoredDocument[] = [];
+      for (const { name, format, chunks, embeddings } of documents) {
+        await tx.query("DELETE FROM documents WHERE name = $1", [name]);
+        const { rows } = await tx.query<{ id: number; created_at: Date }>(
+          "INSERT INTO documents (name, format) VALUES ($1, $2) RETURNING id, created_at",
+          [name, format],
+        );
+        const doc = rows[0]!;
+        await insertChunks(tx, doc.id, chunks, embeddings);
+        stored.push({ id: doc.id, name, format, chunkCount: chunks.length, createdAt: doc.created_at });
+      }
+      if (bulk) await tx.exec(CREATE_HNSW_INDEX);
+      return stored;
     });
+  }
+
+  /** A value from the key/value settings table, or null when it is not set. */
+  async getSetting(key: string): Promise<string | null> {
+    const { rows } = await this.db.query<{ value: string }>("SELECT value FROM settings WHERE key = $1", [key]);
+    return rows[0]?.value ?? null;
+  }
+
+  async setSetting(key: string, value: string): Promise<void> {
+    await this.db.query(
+      "INSERT INTO settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO UPDATE SET value = excluded.value",
+      [key, value],
+    );
   }
 
   async listDocuments(): Promise<StoredDocument[]> {
@@ -142,6 +195,17 @@ export class Store {
   }
 }
 
+const HNSW_EF_SEARCH = 100;
+
+const CREATE_HNSW_INDEX =
+  "CREATE INDEX IF NOT EXISTS chunks_embedding_idx ON chunks USING hnsw (embedding vector_cosine_ops);";
+
+/**
+ * Above this many new chunks, the HNSW index is dropped and rebuilt after the insert: building it
+ * once is about twice as fast as updating it row by row (854 chunks: ~1.6 s instead of ~3.5 s).
+ */
+const BULK_REINDEX_CHUNKS = 256;
+
 async function migrate(db: PGlite, dimensions: number): Promise<void> {
   await db.exec(`
     CREATE EXTENSION IF NOT EXISTS vector;
@@ -170,7 +234,7 @@ async function migrate(db: PGlite, dimensions: number): Promise<void> {
       UNIQUE (document_id, chunk_index)
     );
 
-    CREATE INDEX IF NOT EXISTS chunks_embedding_idx ON chunks USING hnsw (embedding vector_cosine_ops);
+    ${CREATE_HNSW_INDEX}
     CREATE INDEX IF NOT EXISTS chunks_fts_idx ON chunks USING gin (fts);
   `);
 }
@@ -190,21 +254,31 @@ async function checkModel(db: PGlite, model: string, dimensions: number): Promis
   }
 }
 
+/** One INSERT per document: the chunks travel as a JSON array, which is far faster than a row per query. */
 async function insertChunks(
   tx: Transaction,
   documentId: number,
   chunks: Chunk[],
   embeddings: number[][],
 ): Promise<void> {
-  for (const [i, chunk] of chunks.entries()) {
-    await tx.query(
-      `INSERT INTO chunks (document_id, chunk_index, headings, page, content, embedding, fts)
-       VALUES ($1, $2, $3, $4, $5, $6::vector,
-               setweight(to_tsvector('english', array_to_string($3::text[], ' ')), 'A') ||
-               setweight(to_tsvector('english', $5), 'B'))`,
-      [documentId, chunk.index, chunk.headings, chunk.page, chunk.content, toVectorLiteral(embeddings[i]!)],
-    );
-  }
+  if (chunks.length === 0) return;
+  const rows = chunks.map((chunk, i) => ({
+    chunk_index: chunk.index,
+    headings: chunk.headings,
+    page: chunk.page,
+    content: chunk.content,
+    embedding: toVectorLiteral(embeddings[i]!),
+  }));
+  await tx.query(
+    `INSERT INTO chunks (document_id, chunk_index, headings, page, content, embedding, fts)
+     SELECT $1, r.chunk_index, h.headings, r.page, r.content, r.embedding::vector,
+            setweight(to_tsvector('english', array_to_string(h.headings, ' ')), 'A') ||
+            setweight(to_tsvector('english', r.content), 'B')
+       FROM jsonb_to_recordset($2::jsonb)
+            AS r(chunk_index integer, headings jsonb, page integer, content text, embedding text)
+      CROSS JOIN LATERAL (SELECT ARRAY(SELECT jsonb_array_elements_text(r.headings)) AS headings) h`,
+    [documentId, JSON.stringify(rows)],
+  );
 }
 
 const toVectorLiteral = (embedding: number[]): string => `[${embedding.join(",")}]`;

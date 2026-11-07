@@ -20,6 +20,13 @@ describe("detectFormat", () => {
   it("rejects unknown types", () => {
     expect(() => detectFormat("sheet.xlsx")).toThrow(UnsupportedFormatError);
   });
+
+  it("reads only the last extension of the file name, without node:path", () => {
+    expect(detectFormat("docs/v2.0/guide.backup.md")).toBe("markdown");
+    expect(detectFormat("C:\\notes\\week.1.txt")).toBe("text");
+    expect(() => detectFormat("docs.md/README")).toThrow(UnsupportedFormatError);
+    expect(() => detectFormat(".md")).toThrow(UnsupportedFormatError);
+  });
 });
 
 describe("loadMarkdown", () => {

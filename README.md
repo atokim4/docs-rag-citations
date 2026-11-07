@@ -11,6 +11,53 @@ data.
 
 ![Answer with a citation and the source passage](docs/answer-with-citation.png)
 
+## Browser demo (no server, no API key)
+
+`web-demo/` is a static build of the same app that runs entirely in the browser tab:
+
+- **Postgres in the browser**: the same `Store` class and SQL on PGlite with pgvector, saved in
+  IndexedDB, so the corpus and any files you add are still there on the next visit.
+- **Embeddings in WebAssembly**: the same `LocalEmbedder` (all-MiniLM-L6-v2, quantised) through
+  transformers.js and onnxruntime-web. The model comes from the Hugging Face CDN once you start
+  typing or point at an example question, and the browser caches it.
+- **Precomputed corpus**: the Hono docs are chunked and embedded at build time
+  (`npm run demo:corpus`), so the first visit loads 854 ready vectors instead of embedding them.
+- **Your own files**: drop Markdown, HTML, PDF or text and they are chunked and embedded in the
+  browser by the same loaders and chunker the server uses. Nothing is uploaded anywhere.
+- **Same answers as the server**: everything runs in a Web Worker on the shared `src/` modules,
+  with the offline extractive answerer (a public page cannot hold a Claude API key).
+
+![Browser demo: answer with citations, source panel and eval card](docs/demo-answer.png)
+
+Measured in headless Chrome on the build machine (local server, so network time is not included):
+a cold start takes about 5 s (Postgres 3.5 s, loading the 854 chunks 1.7 s), a repeat visit
+about 1 s from IndexedDB. The first visit downloads about 7 MB (gzip) before the demo is ready;
+the first question adds the ONNX runtime (6.6 MB gzip) and the model (about 23 MB).
+
+How it is checked:
+
+- `test/demo-parity.test.ts` builds the corpus files, loads them the way the browser does
+  (Float32 decode, `importCorpus`) and compares with the server's normal ingest: same top 5 for
+  all 30 eval questions in all three search modes, same answers, and the same gold ranks as
+  `eval/results.json`.
+- `npm run e2e:demo` runs Playwright against the built demo, served with the production
+  headers (Content-Security-Policy included) and fails on any console error. It covers asking
+  with a citation and opening the source, refusals, adding a Markdown file and finding it again
+  after a reload, reading a PDF with page citations, a bad file type, the 390 px phone layout,
+  the 30 eval questions in the browser (WebAssembly embeddings) against Node, and the message
+  shown when a browser has no WebAssembly.
+
+Run it locally:
+
+```sh
+npm run build:demo     # corpus (about 80 s) + Vite build into web-demo/dist
+npm run preview:demo   # serves web-demo/dist with the same headers as production
+```
+
+Deploy: `web-demo/dist` is a static folder. `web-demo/public/_headers` (copied into it) sets the
+CSP for Netlify: scripts only from the site plus `'wasm-unsafe-eval'` for WebAssembly, network
+only to the site and Hugging Face. There are no client-side routes, so no SPA rewrite is needed.
+
 ## Features
 
 - **Ingest** Markdown, HTML, PDF (page numbers kept) and plain text. Chunks overlap, never cross
@@ -89,6 +136,7 @@ question ─► embed ─► hybrid SQL: top 20 by cosine + top 20 by ts_rank_cd
 | `src/answer/` | Claude answerer, extractive answerer, citation handling |
 | `src/server.ts` | Hono JSON API |
 | `web/` | React chat UI |
+| `web-demo/` | Browser-only build: worker, corpus format, build script, E2E tests |
 | `eval/` | Questions, corpus, runner and results |
 | `supabase/migration.sql` | The same schema and search for Supabase |
 
@@ -152,8 +200,9 @@ Supabase or any managed Postgres instead.
 ## Tests
 
 ```sh
-npm run check     # typecheck (server, tests, UI), ESLint, 54 Vitest tests, build
+npm run check     # typecheck (server, tests, both UIs), ESLint, 71 Vitest tests, build
 npm run e2e       # Playwright: upload → ask → click citation, refusal, bad upload
+npm run e2e:demo  # Playwright on the built browser demo (run npm run build:demo first)
 npm run eval      # writes eval/results.md and eval/results.json (about 2 minutes)
 ```
 
@@ -168,6 +217,9 @@ via `CHROME_PATH=/path/to/chrome npm run e2e`.
   more, at the cost of speed.
 - The extractive answerer sometimes quotes a second, less relevant passage. Claude mode writes
   a proper answer.
+- The browser demo answers in extractive mode only, keeps data in one browser's IndexedDB, and
+  needs a current browser with WebAssembly. In a private window it falls back to memory and
+  says so.
 
 ## License
 

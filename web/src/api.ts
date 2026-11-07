@@ -24,7 +24,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return body as T;
 }
 
-export const api = {
+/** What the UI needs from a backend: the HTTP API here, or the in-browser engine of the demo. */
+export interface DocsClient {
+  health(): Promise<Health>;
+  documents(): Promise<StoredDocument[]>;
+  upload(files: File[]): Promise<StoredDocument[]>;
+  remove(id: number): Promise<void>;
+  ask(question: string, mode: SearchMode): Promise<AskResult>;
+}
+
+export const api: DocsClient = {
   health: () => request<Health>("/api/health"),
   documents: async () => (await request<{ documents: StoredDocument[] }>("/api/documents")).documents,
   upload: async (files: File[]) => {

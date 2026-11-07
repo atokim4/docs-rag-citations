@@ -8,10 +8,11 @@
  * full ask() pipeline (hybrid search + the offline extractive answerer, or Claude when an API
  * key is set) to measure refusals and whether answers cite a gold chunk.
  */
-import { readdir, readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 import { parseArgs } from "node:util";
 import { answererFromEnv } from "../src/answer/index.js";
+import { markdownFiles } from "./corpus.js";
 import { LocalEmbedder } from "../src/embedder.js";
 import { loadDocument } from "../src/ingest/loaders.js";
 import { DEFAULT_MIN_SIMILARITY, DocsLibrary } from "../src/library.js";
@@ -150,14 +151,6 @@ async function checkDataset(corpus: string, questions: Question[]): Promise<void
       }
     }
   }
-}
-
-async function markdownFiles(dir: string): Promise<string[]> {
-  const entries = await readdir(dir, { withFileTypes: true, recursive: true });
-  return entries
-    .filter((e) => e.isFile() && e.name.endsWith(".md"))
-    .map((e) => join(e.parentPath, e.name))
-    .sort();
 }
 
 function summarize(ranks: (number | null)[]): { hitAt1: number; hitAt5: number; mrrAt10: number } {

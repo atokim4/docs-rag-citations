@@ -7,3 +7,6 @@ coverage/
 web/dist/
 test-results/
 playwright-report/
+web-demo/public/corpus/
+web-demo/dist/
+.scratch/

@@ -1,0 +1,145 @@
+/* Additions for the in-browser demo; everything else comes from web/src/styles.css. */
+
+.demo-status {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.local-note {
+  background: var(--accent-soft);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+}
+
+.small {
+  font-size: 12.5px;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.step progress {
+  width: 100%;
+  height: 6px;
+  accent-color: var(--accent);
+}
+
+.eval-card {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.eval-card figcaption {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.eval-card table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.eval-card th {
+  text-align: left;
+  font-weight: 400;
+  white-space: nowrap;
+  padding: 2px 8px 2px 0;
+}
+
+.eval-card .best th,
+.eval-card .best .num {
+  font-weight: 600;
+}
+
+.bar-cell {
+  width: 100%;
+}
+
+.bar {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: #b9c9c2;
+}
+
+.best .bar {
+  background: var(--accent);
+}
+
+.num {
+  text-align: right;
+  padding-left: 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.suggestion {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.suggestion:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.suggestion:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.fatal {
+  max-width: 520px;
+  margin: 18vh auto 0;
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+}
+
+/* On phones the sample corpus is already loaded, so the chat comes first and the library after it. */
+@media (max-width: 760px) {
+  .thread {
+    order: 1;
+  }
+
+  .source {
+    order: 2;
+  }
+
+  .library {
+    order: 3;
+    border-bottom: none;
+    border-top: 1px solid var(--line);
+  }
+
+  .empty {
+    margin-top: 4vh;
+  }
+}

@@ -1,4 +1,6 @@
-import { isRefusal, REFUSAL, resolveCitations, type Answerer } from "./answer/index.js";
+// Import the answer modules directly (not answer/index.js) so the browser build does not pull in the Claude SDK.
+import type { Answerer } from "./answer/answerer.js";
+import { isRefusal, REFUSAL, resolveCitations } from "./answer/citations.js";
 import { chunkSections, embeddingInput, type ChunkOptions } from "./ingest/chunker.js";
 import { detectFormat, loadDocument } from "./ingest/loaders.js";
 import type { Embedder } from "./embedder.js";
@@ -44,6 +46,20 @@ export class DocsLibrary {
       dimensions: embedder.dimensions,
       model: embedder.model,
     });
+    return new DocsLibrary(store, embedder, answerer, chunking);
+  }
+
+  /**
+   * Wraps a store the caller opened (e.g. in IndexedDB with documents loaded from a
+   * precomputed corpus). The library takes ownership and closes it.
+   */
+  static fromStore(
+    store: Store,
+    { embedder, answerer, chunking = {} }: Omit<LibraryOptions, "dataDir">,
+  ): DocsLibrary {
+    if (store.dimensions !== embedder.dimensions) {
+      throw new RangeError(`Store holds ${store.dimensions}-d vectors but the embedder makes ${embedder.dimensions}-d`);
+    }
     return new DocsLibrary(store, embedder, answerer, chunking);
   }
 

@@ -4,7 +4,7 @@
   "description": "Chat with your docs: hybrid pgvector + full-text retrieval with cited answers and a retrieval eval. Personal portfolio project.",
   "scripts": {
     "build": "npm run build:server && npm run build:web",
-    "typecheck": "tsc -p tsconfig.test.json && tsc -p web/tsconfig.json",
+    "typecheck": "tsc -p tsconfig.test.json && tsc -p web/tsconfig.json && tsc -p web-demo/tsconfig.json",
     "lint": "eslint .",
     "test": "vitest run",
     "cli": "tsx src/cli.ts",
@@ -15,7 +15,12 @@
     "start": "node --env-file-if-exists=.env dist/serve.js",
     "dev:api": "tsx watch src/serve.ts",
     "dev:web": "vite --config web/vite.config.ts",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "demo:corpus": "tsx web-demo/scripts/build-corpus.ts",
+    "build:demo": "npm run demo:corpus && vite build --config web-demo/vite.config.ts",
+    "dev:demo": "vite --config web-demo/vite.config.ts",
+    "preview:demo": "tsx web-demo/scripts/serve.ts",
+    "e2e:demo": "playwright test --config playwright.demo.config.ts"
   },
   "author": "Sunnatulla E.",
   "license": "MIT",
@@ -27,6 +32,7 @@
     "@huggingface/transformers": "^4.3.2",
     "hono": "^4.13.17",
     "node-html-parser": "^9.0.7",
+    "onnxruntime-web": "1.31.0-dev.20260914-8d85527a0",
     "unpdf": "^1.9.1"
   },
   "devDependencies": {

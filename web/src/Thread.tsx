@@ -16,6 +16,12 @@ interface Props {
   onModeChange: (mode: SearchMode) => void;
   onAsk: (question: string) => void;
   onSelect: (turn: number, n: number) => void;
+  /** Example questions shown as buttons before the first question. */
+  suggestions?: string[];
+  /** The user is about to ask (focused or typing in the question box). */
+  onIntent?: (() => void) | undefined;
+  /** Placeholder while asking is not possible; defaults to asking for a document. */
+  waitingText?: string | undefined;
 }
 
 const MODE_LABELS: Record<SearchMode, string> = {
@@ -24,7 +30,7 @@ const MODE_LABELS: Record<SearchMode, string> = {
   fulltext: "Keyword only",
 };
 
-export function Thread({ turns, mode, canAsk, selected, onModeChange, onAsk, onSelect }: Props) {
+export function Thread({ turns, mode, canAsk, selected, onModeChange, onAsk, onSelect, suggestions = [], onIntent, waitingText = "Add a document first" }: Props) {
   const [question, setQuestion] = useState("");
   const end = useRef<HTMLDivElement>(null);
   const busy = turns.some((t) => t.state === "pending");
@@ -51,6 +57,22 @@ export function Thread({ turns, mode, canAsk, selected, onModeChange, onAsk, onS
               Answers quote or summarise the passages they come from. Every claim carries a numbered citation; click it to
               read the source. If the documents do not cover the question, you get “I don’t know” instead of a guess.
             </p>
+            {suggestions.length > 0 && (
+              <div className="suggestions" aria-label="Example questions">
+                {suggestions.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    className="suggestion"
+                    disabled={!canAsk || busy}
+                    onMouseEnter={onIntent}
+                    onClick={() => onAsk(s)}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
         {turns.map((turn) => (
@@ -71,8 +93,9 @@ export function Thread({ turns, mode, canAsk, selected, onModeChange, onAsk, onS
           value={question}
           maxLength={500}
           autoComplete="off"
-          placeholder={canAsk ? "Ask a question about your documents…" : "Add a document first"}
+          placeholder={canAsk ? "Ask a question about your documents…" : waitingText}
           disabled={!canAsk}
+          onFocus={onIntent}
           onChange={(e) => setQuestion(e.target.value)}
         />
         <label className="visually-hidden" htmlFor="mode">

@@ -1,4 +1,4 @@
-import { useRef, useState, type DragEvent } from "react";
+import { useRef, useState, type DragEvent, type ReactNode } from "react";
 import type { Health, StoredDocument } from "./api.js";
 
 const ACCEPT = ".md,.markdown,.mdx,.html,.htm,.pdf,.txt";
@@ -8,11 +8,14 @@ interface Props {
   documents: StoredDocument[];
   error: string | null;
   uploading: boolean;
+  /** True while the backend is not ready to take files. */
+  disabled?: boolean;
+  aside?: ReactNode;
   onUpload: (files: File[]) => void;
   onRemove: (id: number) => void;
 }
 
-export function Library({ health, documents, error, uploading, onUpload, onRemove }: Props) {
+export function Library({ health, documents, error, uploading, disabled = false, aside, onUpload, onRemove }: Props) {
   const input = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const chunks = documents.reduce((n, d) => n + d.chunkCount, 0);
@@ -20,6 +23,7 @@ export function Library({ health, documents, error, uploading, onUpload, onRemov
   const onDrop = (event: DragEvent) => {
     event.preventDefault();
     setDragging(false);
+    if (uploading || disabled) return;
     const files = [...event.dataTransfer.files];
     if (files.length > 0) onUpload(files);
   };
@@ -36,6 +40,8 @@ export function Library({ health, documents, error, uploading, onUpload, onRemov
         )}
       </header>
 
+      {aside}
+
       <div
         className={`dropzone${dragging ? " dropzone--active" : ""}`}
         onDragOver={(e) => {
@@ -46,7 +52,7 @@ export function Library({ health, documents, error, uploading, onUpload, onRemov
         onDrop={onDrop}
       >
         <p>Drop Markdown, HTML, PDF or text files here</p>
-        <button type="button" className="button" disabled={uploading} onClick={() => input.current?.click()}>
+        <button type="button" className="button" disabled={uploading || disabled} onClick={() => input.current?.click()}>
           {uploading ? "Indexing…" : "Choose files"}
         </button>
         <input

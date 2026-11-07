@@ -1,12 +1,25 @@
-import { useCallback, useEffect, useState } from "react";
-import { api, ApiError, type Health, type SearchMode, type StoredDocument } from "./api.js";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { api, ApiError, type DocsClient, type Health, type SearchMode, type StoredDocument } from "./api.js";
 import { Library } from "./Library.js";
 import { SourcePanel } from "./SourcePanel.js";
 import { Thread, type Turn } from "./Thread.js";
 
 const errorText = (error: unknown): string => (error instanceof ApiError ? error.message : "Something went wrong");
 
-export function App() {
+interface Props {
+  /** Backend to talk to; the HTTP API by default. */
+  client?: DocsClient;
+  /** Extra content under the library header (the browser demo puts its status here). */
+  aside?: ReactNode;
+  /** Example questions offered before the first one is asked. */
+  suggestions?: string[];
+  /** Set to false while the backend is still starting. */
+  ready?: boolean;
+  /** Called when the user is about to ask (focus or typing), e.g. to start loading a model. */
+  onIntent?: () => void;
+}
+
+export function App({ client = api, aside, suggestions = [], ready = true, onIntent }: Props) {
   const [health, setHealth] = useState<Health | null>(null);
   const [documents, setDocuments] = useState<StoredDocument[]>([]);
   const [libraryError, setLibraryError] = useState<string | null>(null);
@@ -16,14 +29,15 @@ export function App() {
   const [selected, setSelected] = useState<{ turn: number; n: number } | null>(null);
 
   const refresh = useCallback(async () => {
+    if (!ready) return;
     try {
-      const [h, docs] = await Promise.all([api.health(), api.documents()]);
+      const [h, docs] = await Promise.all([client.health(), client.documents()]);
       setHealth(h);
       setDocuments(docs);
     } catch (error) {
       setLibraryError(errorText(error));
     }
-  }, []);
+  }, [client, ready]);
 
   useEffect(() => {
     void refresh();
@@ -33,7 +47,7 @@ export function App() {
     setUploading(true);
     setLibraryError(null);
     try {
-      await api.upload(files);
+      await client.upload(files);
     } catch (error) {
       setLibraryError(errorText(error));
     } finally {
@@ -45,7 +59,7 @@ export function App() {
   const remove = async (id: number) => {
     setLibraryError(null);
     try {
-      await api.remove(id);
+      await client.remove(id);
     } catch (error) {
       setLibraryError(errorText(error));
     }
@@ -56,7 +70,7 @@ export function App() {
     const id = turns.length;
     setTurns((t) => [...t, { id, question, mode, state: "pending" }]);
     try {
-      const result = await api.ask(question, mode);
+      const result = await client.ask(question, mode);
       setTurns((t) => t.map((turn) => (turn.id === id ? { ...turn, state: "done", result } : turn)));
       setSelected(result.cited[0] ? { turn: id, n: result.cited[0] } : null);
     } catch (error) {
@@ -75,13 +89,18 @@ export function App() {
         documents={documents}
         error={libraryError}
         uploading={uploading}
+        disabled={!ready}
+        aside={aside}
         onUpload={(files) => void upload(files)}
         onRemove={(id) => void remove(id)}
       />
       <Thread
         turns={turns}
         mode={mode}
-        canAsk={documents.length > 0}
+        canAsk={ready && documents.length > 0}
+        suggestions={suggestions}
+        onIntent={onIntent}
+        waitingText={ready ? undefined : "Starting the in-browser engine…"}
         selected={selected}
         onModeChange={setMode}
         onAsk={(question) => void ask(question)}
