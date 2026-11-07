@@ -13,6 +13,9 @@ data.
 
 ## Browser demo (no server, no API key)
 
+**Live demo: https://sunnatulla-docs-rag.netlify.app** (static site on Netlify; the first question
+downloads the embedding model, about 23 MB, then answers come from your own browser).
+
 `web-demo/` is a static build of the same app that runs entirely in the browser tab:
 
 - **Postgres in the browser**: the same `Store` class and SQL on PGlite with pgvector, saved in
