@@ -1,0 +1,284 @@
+{
+  "corpus": "eval/corpus/hono-docs",
+  "about": "Questions written by hand against the Hono website docs (honojs/website @ 20aab4e, MIT). An answerable question lists every passage found that answers it: a document and a phrase that must appear in the retrieved chunk. A question with expect = refuse is not covered by the docs.",
+  "questions": [
+    {
+      "id": "q01",
+      "question": "How do I read a path parameter like :id inside a handler?",
+      "gold": [
+        {
+          "document": "api/request.md",
+          "evidence": "c.req.param('id')"
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "question": "How do I get a query string value?",
+      "gold": [
+        {
+          "document": "api/request.md",
+          "evidence": "c.req.query('q')"
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "question": "How do I parse a form body sent as multipart/form-data?",
+      "gold": [
+        {
+          "document": "api/request.md",
+          "evidence": "c.req.parseBody()"
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "question": "How do I enable CORS for my API routes?",
+      "gold": [
+        {
+          "document": "middleware/builtin/cors.md",
+          "evidence": "app.use('/api/*', cors())"
+        }
+      ]
+    },
+    {
+      "id": "q05",
+      "question": "How do I change the port number when running on Node.js?",
+      "gold": [
+        {
+          "document": "getting-started/nodejs.md",
+          "evidence": "port number with the `port` option"
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "question": "How can I protect a route with a username and password?",
+      "gold": [
+        {
+          "document": "middleware/builtin/basic-auth.md",
+          "evidence": "basicAuth("
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "question": "How do I customize the 404 Not Found response?",
+      "gold": [
+        {
+          "document": "api/hono.md",
+          "evidence": "`app.notFound` allows you to customize a Not Found Response"
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "question": "How do I handle uncaught errors and return a custom response?",
+      "gold": [
+        {
+          "document": "api/hono.md",
+          "evidence": "`app.onError` allows you to handle uncaught errors"
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "question": "How do I send a test request to my app without starting a server?",
+      "gold": [
+        {
+          "document": "guides/testing.md",
+          "evidence": "app.request('/posts')"
+        }
+      ]
+    },
+    {
+      "id": "q10",
+      "question": "Is there a type-safe client for calling routes in tests?",
+      "gold": [
+        {
+          "document": "helpers/testing.md",
+          "evidence": "The `testClient()` function takes an instance of Hono"
+        }
+      ]
+    },
+    {
+      "id": "q11",
+      "question": "How do I stream server-sent events?",
+      "gold": [
+        {
+          "document": "helpers/streaming.md",
+          "evidence": "streamSSE"
+        }
+      ]
+    },
+    {
+      "id": "q12",
+      "question": "What option sets the secret key for the JWT middleware?",
+      "gold": [
+        {
+          "document": "middleware/builtin/jwt.md",
+          "evidence": "secret:"
+        }
+      ]
+    },
+    {
+      "id": "q13",
+      "question": "Which router is the fastest one in Hono?",
+      "gold": [
+        {
+          "document": "concepts/routers.md",
+          "evidence": "RegExpRouter is the fastest router in the JavaScript world"
+        }
+      ]
+    },
+    {
+      "id": "q14",
+      "question": "How do I validate a request with a Zod schema?",
+      "gold": [
+        {
+          "document": "guides/validation.md",
+          "evidence": "import { zValidator } from '@hono/zod-validator'"
+        }
+      ]
+    },
+    {
+      "id": "q15",
+      "question": "How do I access KV or R2 bindings on Cloudflare Workers?",
+      "gold": [
+        {
+          "document": "getting-started/cloudflare-workers.md",
+          "evidence": "You can access them in `c.env`"
+        }
+      ]
+    },
+    {
+      "id": "q16",
+      "question": "How do I limit the maximum size of a request body?",
+      "gold": [
+        {
+          "document": "middleware/builtin/body-limit.md",
+          "evidence": "maxSize"
+        }
+      ]
+    },
+    {
+      "id": "q17",
+      "question": "How do I serve static files on Node.js?",
+      "gold": [
+        {
+          "document": "getting-started/nodejs.md",
+          "evidence": "serveStatic({ root: './' })"
+        }
+      ]
+    },
+    {
+      "id": "q18",
+      "question": "How do I put all routes under a common prefix like /api?",
+      "gold": [
+        {
+          "document": "api/routing.md",
+          "evidence": "basePath('/api')"
+        }
+      ]
+    },
+    {
+      "id": "q19",
+      "question": "How do I redirect to another URL with a 301 status?",
+      "gold": [
+        {
+          "document": "api/context.md",
+          "evidence": "c.redirect('/', 301)"
+        }
+      ]
+    },
+    {
+      "id": "q20",
+      "question": "How do I throw an error response with a status code from a handler?",
+      "gold": [
+        {
+          "document": "api/exception.md",
+          "evidence": "HTTPException"
+        }
+      ]
+    },
+    {
+      "id": "q21",
+      "question": "How do I pass a value from middleware to the handler?",
+      "gold": [
+        {
+          "document": "api/context.md",
+          "evidence": "c.set('message', 'Hono is cool!!')"
+        },
+        {
+          "document": "guides/middleware.md",
+          "evidence": "c.set('user', { id: '123', name: 'Alice' })"
+        }
+      ]
+    },
+    {
+      "id": "q22",
+      "question": "How do I add a request ID to every request?",
+      "gold": [
+        {
+          "document": "middleware/builtin/request-id.md",
+          "evidence": "app.use('*', requestId())"
+        }
+      ]
+    },
+    {
+      "id": "q23",
+      "question": "What command creates a new Hono project?",
+      "gold": [
+        {
+          "document": "getting-started/basic.md",
+          "evidence": "create hono@latest my-app"
+        },
+        {
+          "document": "guides/create-hono.md",
+          "evidence": "npm create hono@latest"
+        }
+      ]
+    },
+    {
+      "id": "q24",
+      "question": "How do I upgrade an HTTP connection to a WebSocket on Cloudflare Workers?",
+      "gold": [
+        {
+          "document": "helpers/websocket.md",
+          "evidence": "upgradeWebSocket"
+        }
+      ]
+    },
+    {
+      "id": "q25",
+      "question": "How do I deploy my Hono app to a Kubernetes cluster with Helm charts?",
+      "expect": "refuse"
+    },
+    {
+      "id": "q26",
+      "question": "How do I send an email over SMTP from a handler?",
+      "expect": "refuse"
+    },
+    {
+      "id": "q27",
+      "question": "How do I render Vue single-file components on the server?",
+      "expect": "refuse"
+    },
+    {
+      "id": "q28",
+      "question": "How much does the Hono enterprise support plan cost per month?",
+      "expect": "refuse"
+    },
+    {
+      "id": "q29",
+      "question": "What is the boiling point of water at sea level?",
+      "expect": "refuse"
+    },
+    {
+      "id": "q30",
+      "question": "How do I configure a Kafka consumer group?",
+      "expect": "refuse"
+    }
+  ]
+}

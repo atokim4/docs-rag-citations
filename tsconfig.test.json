@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "noEmit": true, "rootDir": "." },
+  "include": ["src", "test", "eval", "vitest.config.ts", "playwright.config.ts", "e2e", "web/vite.config.ts"]
+}

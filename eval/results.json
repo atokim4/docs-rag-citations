@@ -1,0 +1,374 @@
+{
+  "date": "2026-11-07",
+  "corpus": {
+    "documents": 91,
+    "chunks": 854
+  },
+  "questions": {
+    "answerable": 24,
+    "unanswerable": 6
+  },
+  "retrieval": [
+    {
+      "mode": "vector",
+      "hitAt1": 0.375,
+      "hitAt5": 0.625,
+      "mrrAt10": 0.5094246031746033,
+      "ranks": {
+        "q01": 2,
+        "q02": 3,
+        "q03": 1,
+        "q04": 7,
+        "q05": 1,
+        "q06": 1,
+        "q07": 2,
+        "q08": 6,
+        "q09": null,
+        "q10": 1,
+        "q11": 1,
+        "q12": null,
+        "q13": null,
+        "q14": 2,
+        "q15": 6,
+        "q16": 6,
+        "q17": 2,
+        "q18": null,
+        "q19": 1,
+        "q20": 1,
+        "q21": null,
+        "q22": 4,
+        "q23": 1,
+        "q24": 1
+      }
+    },
+    {
+      "mode": "fulltext",
+      "hitAt1": 0.20833333333333334,
+      "hitAt5": 0.7083333333333334,
+      "mrrAt10": 0.4107638888888889,
+      "ranks": {
+        "q01": null,
+        "q02": null,
+        "q03": 3,
+        "q04": 1,
+        "q05": 1,
+        "q06": 1,
+        "q07": 2,
+        "q08": 3,
+        "q09": 5,
+        "q10": 1,
+        "q11": 2,
+        "q12": 2,
+        "q13": null,
+        "q14": 8,
+        "q15": 2,
+        "q16": 6,
+        "q17": 1,
+        "q18": null,
+        "q19": 4,
+        "q20": 4,
+        "q21": 5,
+        "q22": 2,
+        "q23": 2,
+        "q24": null
+      }
+    },
+    {
+      "mode": "hybrid",
+      "hitAt1": 0.5,
+      "hitAt5": 0.8333333333333334,
+      "mrrAt10": 0.6317625661375661,
+      "ranks": {
+        "q01": 7,
+        "q02": 4,
+        "q03": 1,
+        "q04": 1,
+        "q05": 1,
+        "q06": 1,
+        "q07": 1,
+        "q08": 2,
+        "q09": 3,
+        "q10": 1,
+        "q11": 1,
+        "q12": 5,
+        "q13": 8,
+        "q14": 3,
+        "q15": 3,
+        "q16": 3,
+        "q17": 1,
+        "q18": null,
+        "q19": 1,
+        "q20": 1,
+        "q21": 9,
+        "q22": 2,
+        "q23": 1,
+        "q24": 1
+      }
+    }
+  ],
+  "similarityGate": {
+    "default": 0.4,
+    "answerable": {
+      "min": 0.437,
+      "median": 0.61,
+      "max": 0.834
+    },
+    "unanswerable": {
+      "min": 0.163,
+      "median": 0.387,
+      "max": 0.525
+    },
+    "sweep": [
+      {
+        "threshold": 0.2,
+        "answerableKept": 24,
+        "unanswerableRefused": 1
+      },
+      {
+        "threshold": 0.25,
+        "answerableKept": 24,
+        "unanswerableRefused": 1
+      },
+      {
+        "threshold": 0.3,
+        "answerableKept": 24,
+        "unanswerableRefused": 2
+      },
+      {
+        "threshold": 0.35,
+        "answerableKept": 24,
+        "unanswerableRefused": 3
+      },
+      {
+        "threshold": 0.4,
+        "answerableKept": 24,
+        "unanswerableRefused": 4
+      },
+      {
+        "threshold": 0.45,
+        "answerableKept": 23,
+        "unanswerableRefused": 4
+      }
+    ]
+  },
+  "endToEnd": {
+    "engine": "extractive",
+    "correctRefusals": 6,
+    "falseRefusals": 5,
+    "citedGoldChunk": 12,
+    "citedGoldDocument": 17,
+    "refusalAccuracy": 0.8333333333333334,
+    "perQuestion": [
+      {
+        "id": "q01",
+        "refuse": false,
+        "refused": true,
+        "citedGold": false,
+        "citedDocument": false
+      },
+      {
+        "id": "q02",
+        "refuse": false,
+        "refused": false,
+        "citedGold": false,
+        "citedDocument": false
+      },
+      {
+        "id": "q03",
+        "refuse": false,
+        "refused": false,
+        "citedGold": true,
+        "citedDocument": true
+      },
+      {
+        "id": "q04",
+        "refuse": false,
+        "refused": false,
+        "citedGold": true,
+        "citedDocument": true
+      },
+      {
+        "id": "q05",
+        "refuse": false,
+        "refused": false,
+        "citedGold": true,
+        "citedDocument": true
+      },
+      {
+        "id": "q06",
+        "refuse": false,
+        "refused": true,
+        "citedGold": false,
+        "citedDocument": false
+      },
+      {
+        "id": "q07",
+        "refuse": false,
+        "refused": false,
+        "citedGold": true,
+        "citedDocument": true
+      },
+      {
+        "id": "q08",
+        "refuse": false,
+        "refused": false,
+        "citedGold": true,
+        "citedDocument": true
+      },
+      {
+        "id": "q09",
+        "refuse": false,
+        "refused": false,
+        "citedGold": false,
+        "citedDocument": false
+      },
+      {
+        "id": "q10",
+        "refuse": false,
+        "refused": false,
+        "citedGold": true,
+        "citedDocument": true
+      },
+      {
+        "id": "q11",
+        "refuse": false,
+        "refused": false,
+        "citedGold": true,
+        "citedDocument": true
+      },
+      {
+        "id": "q12",
+        "refuse": false,
+        "refused": false,
+        "citedGold": false,
+        "citedDocument": true
+      },
+      {
+        "id": "q13",
+        "refuse": false,
+        "refused": false,
+        "citedGold": false,
+        "citedDocument": true
+      },
+      {
+        "id": "q14",
+        "refuse": false,
+        "refused": false,
+        "citedGold": false,
+        "citedDocument": true
+      },
+      {
+        "id": "q15",
+        "refuse": false,
+        "refused": false,
+        "citedGold": true,
+        "citedDocument": true
+      },
+      {
+        "id": "q16",
+        "refuse": false,
+        "refused": false,
+        "citedGold": false,
+        "citedDocument": true
+      },
+      {
+        "id": "q17",
+        "refuse": false,
+        "refused": false,
+        "citedGold": true,
+        "citedDocument": true
+      },
+      {
+        "id": "q18",
+        "refuse": false,
+        "refused": true,
+        "citedGold": false,
+        "citedDocument": false
+      },
+      {
+        "id": "q19",
+        "refuse": false,
+        "refused": true,
+        "citedGold": false,
+        "citedDocument": false
+      },
+      {
+        "id": "q20",
+        "refuse": false,
+        "refused": false,
+        "citedGold": true,
+        "citedDocument": true
+      },
+      {
+        "id": "q21",
+        "refuse": false,
+        "refused": false,
+        "citedGold": false,
+        "citedDocument": true
+      },
+      {
+        "id": "q22",
+        "refuse": false,
+        "refused": true,
+        "citedGold": false,
+        "citedDocument": false
+      },
+      {
+        "id": "q23",
+        "refuse": false,
+        "refused": false,
+        "citedGold": true,
+        "citedDocument": true
+      },
+      {
+        "id": "q24",
+        "refuse": false,
+        "refused": false,
+        "citedGold": true,
+        "citedDocument": true
+      },
+      {
+        "id": "q25",
+        "refuse": true,
+        "refused": true,
+        "citedGold": false,
+        "citedDocument": false
+      },
+      {
+        "id": "q26",
+        "refuse": true,
+        "refused": true,
+        "citedGold": false,
+        "citedDocument": false
+      },
+      {
+        "id": "q27",
+        "refuse": true,
+        "refused": true,
+        "citedGold": false,
+        "citedDocument": false
+      },
+      {
+        "id": "q28",
+        "refuse": true,
+        "refused": true,
+        "citedGold": false,
+        "citedDocument": false
+      },
+      {
+        "id": "q29",
+        "refuse": true,
+        "refused": true,
+        "citedGold": false,
+        "citedDocument": false
+      },
+      {
+        "id": "q30",
+        "refuse": true,
+        "refused": true,
+        "citedGold": false,
+        "citedDocument": false
+      }
+    ]
+  }
+}

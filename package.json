@@ -1,0 +1,54 @@
+{
+  "name": "docs-rag-citations",
+  "version": "0.1.0",
+  "description": "Chat with your docs: hybrid pgvector + full-text retrieval with cited answers and a retrieval eval. Personal portfolio project.",
+  "scripts": {
+    "build": "npm run build:server && npm run build:web",
+    "typecheck": "tsc -p tsconfig.test.json && tsc -p web/tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "cli": "tsx src/cli.ts",
+    "check": "npm run typecheck && npm run lint && npm test && npm run build",
+    "eval": "tsx eval/run.ts",
+    "build:server": "tsc -p tsconfig.json",
+    "build:web": "vite build --config web/vite.config.ts",
+    "start": "node --env-file-if-exists=.env dist/serve.js",
+    "dev:api": "tsx watch src/serve.ts",
+    "dev:web": "vite --config web/vite.config.ts",
+    "e2e": "playwright test"
+  },
+  "author": "Sunnatulla E.",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.6.0",
+    "@electric-sql/pglite": "^0.5.15",
+    "@electric-sql/pglite-pgvector": "^0.0.16",
+    "@hono/node-server": "^2.1.6",
+    "@huggingface/transformers": "^4.3.2",
+    "hono": "^4.13.17",
+    "node-html-parser": "^9.0.7",
+    "unpdf": "^1.9.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.0",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.2.1",
+    "eslint": "^10.14.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
+  },
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  }
+}
